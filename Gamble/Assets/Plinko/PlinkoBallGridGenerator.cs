@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+using TMPro;
 using UnityEngine;
 
 public class PlinkoBallGridGenerator : MonoBehaviour
@@ -68,10 +70,37 @@ public class PlinkoBallGridGenerator : MonoBehaviour
         float binSpacing = bottomBinSpacing;
         float startX = -(numBins) * binSpacing / 2f;
         float yOffset = -rows * 0.5f;
+
+        // Calculate number of rows
+        int totalRows = Mathf.Clamp(rows, 3, 12);
+        int maxMultiplier = totalRows - 1;
+
         for (int i = 0; i < numBins; i++)
         {
             Vector3 BinPosition = new Vector3(startX + (i * binSpacing), bottomYPosition + yOffset, 0);
             GameObject bin = Instantiate(collectionBoxPrefab, BinPosition, Quaternion.identity, transform);
+
+            // Calculate distance from the center of the bins
+            int distanceFromCenter = Mathf.Min(i, numBins - i - 1);
+            // Calculate mutliplier: outermost boxes get 0.2x, then progressivly higher
+            float multiplier = Mathf.Pow(2, distanceFromCenter) * 0.4f;
+
+            // Set multiplier in the collection box script
+            CollectionBoxScript boxScript = bin.GetComponent<CollectionBoxScript>();
+            if (boxScript != null) {
+                boxScript.SetMultiplier(multiplier);
+            }
+
+            // Add TextMeshPro to display multiplier
+            GameObject multiplierTextObject = new GameObject("MultiplierText");
+            multiplierTextObject.transform.SetParent(bin.transform);
+            multiplierTextObject.transform.localPosition = new Vector3(0.5f, 0.5f, 0);
+
+            TextMeshPro textMesh = multiplierTextObject.AddComponent<TextMeshPro>();
+            textMesh.text = $"{multiplier}x";
+            textMesh.fontSize = 1.5f;
+            textMesh.color = Color.black;
+            textMesh.alignment = TextAlignmentOptions.Center;
         }
     }
 

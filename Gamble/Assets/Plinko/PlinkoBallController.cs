@@ -58,6 +58,8 @@ public class PlinkoBallController : MonoBehaviour
     void HandleBottomCollision()
     {
         Debug.Log("Ball reached bottom!");
+        Destroy(gameObject);
+        GameManager.Instance.AddMoney(100);
 
     }
 

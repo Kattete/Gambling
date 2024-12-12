@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6449919968699556979}
   - component: {fileID: 3328128082355684877}
   - component: {fileID: 6872113213499587498}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -143,7 +143,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3500909252655524879}
-  m_Layer: 0
+  - component: {fileID: 2846585257312241955}
+  m_Layer: 7
   m_Name: CollectionBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -169,6 +170,18 @@ Transform:
   - {fileID: 6449919968699556979}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2846585257312241955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2130983616661155546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d8f5474021c51b4fa5bb517ea71af44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2360492669877958767
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +192,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3974006317702306319}
   - component: {fileID: 7242493649861210917}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -266,7 +279,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8038831297473350262}
   - component: {fileID: 3285294009076966678}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -353,7 +366,7 @@ GameObject:
   m_Component:
   - component: {fileID: 324112084468848501}
   - component: {fileID: 7178698092333259083}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Right
   m_TagString: Untagged
   m_Icon: {fileID: 0}
