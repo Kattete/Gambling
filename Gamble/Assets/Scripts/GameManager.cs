@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    [SerializeField] private float startingMoney = 10000f;
     public float Money { get; private set; }
     public TMP_Text moneyDisplayText;
 
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        Money = startingMoney;
+        UpdateMoneyDisplay();
     }
 
     public void AddMoney(float amount)
@@ -47,7 +50,7 @@ public class GameManager : MonoBehaviour
     {
         if(moneyDisplayText != null)
         {
-            moneyDisplayText.text = $"Money: {Money}$";
+            moneyDisplayText.text = $"Balance: {Money}$";
         }
     }
 }
