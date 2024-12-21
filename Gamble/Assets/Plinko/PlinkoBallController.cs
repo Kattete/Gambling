@@ -18,6 +18,7 @@ public class PlinkoBallController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        gameObject.tag = "Ball";
     }
 
     public void DropBall(Transform[] dropPoint, Rigidbody2D rb)
@@ -39,10 +40,6 @@ public class PlinkoBallController : MonoBehaviour
         if (((1 << collision.gameObject.layer) & pegLayerMask) != 0) {
             HandlePegCollision(collision);
         }
-
-        if (((1 << collision.gameObject.layer) & bottomLayerMask) != 0) {
-            HandleBottomCollision();
-        }
     }
 
     void HandlePegCollision(Collision2D collision)
@@ -53,14 +50,6 @@ public class PlinkoBallController : MonoBehaviour
 
         // Reduce velocity based on bounce coefficient
         rb.linearVelocity *= bounceCoefficient;
-    }
-
-    void HandleBottomCollision()
-    {
-        Debug.Log("Ball reached bottom!");
-        Destroy(gameObject);
-        GameManager.Instance.AddMoney(100);
-
     }
 
     private void FixedUpdate()

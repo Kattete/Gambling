@@ -86,7 +86,7 @@ public class PlinkoBallGridGenerator : MonoBehaviour
             float multiplier = Mathf.Pow(2, distanceFromCenter) * 0.4f;
 
             // Set multiplier in the collection box script
-            CollectionBoxScript boxScript = bin.GetComponent<CollectionBoxScript>();
+            CollectionBoxScript boxScript = bin.GetComponentInChildren<CollectionBoxScript>();
             if (boxScript != null) {
                 boxScript.SetMultiplier(multiplier);
             }

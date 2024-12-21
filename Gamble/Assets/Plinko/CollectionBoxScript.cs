@@ -8,4 +8,13 @@ public class CollectionBoxScript : MonoBehaviour
     {
         multiplier = newMultiplier;
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ball"))
+        {
+            PlinkoBettingManager.Instance.ProcessWin(multiplier);
+            Destroy(collision.gameObject);
+        }
+    }
 }
