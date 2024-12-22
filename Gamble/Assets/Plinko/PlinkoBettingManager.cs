@@ -5,6 +5,7 @@ using System;
 using TMPro;
 using UnityEngine.Assertions.Must;
 using Unity.VisualScripting;
+using System.Collections;
 
 [System.Serializable]
 public class BetHistoryEntry
@@ -38,6 +39,19 @@ public class PlinkoBettingManager : MonoBehaviour
     public Transform betHistoryContent;
     public int maxHistoyrEntries = 10;
 
+    [Header("Double Button References")]
+    [SerializeField] private Button doubleButton;
+    [SerializeField] private Image doubleButtonImage;
+    [SerializeField] private TMP_Text doubleButtonText;
+
+    [Header("Glow Effect Settings")]
+    [SerializeField] private Color normalColor = new Color(1f, 0.5f, 0f);
+    [SerializeField] private Color glowColor = new Color(1f, 0.8f, 0f);
+    [SerializeField] private float glowSpeed = 2f;
+    [SerializeField] private float glowIntensity = 1.2f;
+
+    private Coroutine glowCoroutine;
+
     private float currentBet = 100f;
     private bool betPlaced = false;
     private List<BetHistoryEntry> betHistory = new List<BetHistoryEntry>();
@@ -60,9 +74,93 @@ public class PlinkoBettingManager : MonoBehaviour
     {
         EnsureBetHistoryComponents();
         InitializeButtons();
-
+        InitializeDoubleBetButton();
         // Set initil bet amount
         SelectBetAmount(0);
+    }
+
+    private void InitializeDoubleBetButton()
+    {
+        // Hide button initialy
+        if(doubleButton != null)
+        {
+            doubleButton.gameObject.SetActive(false);
+            doubleButton.onClick.AddListener(OnDoubleBetClicked);
+        }
+    }
+
+    public void ShowDoubleBetButton()
+    {
+        if (doubleButton != null)
+        {
+            // calculate the doubled bet amount
+            float doubledBet = currentBet * 2;
+
+            // Only show if player can afford the doubled bet
+            if (GameManager.Instance.HasSufficientFunds(doubledBet))
+            {
+                doubleButton.gameObject.SetActive(true);
+                doubleButtonText.text = $"Double Bet\n({doubledBet}$)";
+                StartGlowEffect();
+            }
+        }
+    }
+
+    private void OnDoubleBetClicked()
+    {
+        // Double the current bet
+        int currentIndex = Array.IndexOf(betAmounts, currentBet);
+        if(currentIndex < betAmounts.Length - 1)
+        {
+            // Find the next highest bet amunt thats closest to double
+            float targetAmount = currentBet * 2;
+            for (int i = currentIndex + 1; i < betAmounts.Length; i++)
+            {
+                if (betAmounts[i] >= targetAmount)
+                {
+                    SelectBetAmount(i);
+                    break;
+                }
+            }
+        }
+        // Hide the button after use
+        HideDoubleBetButton();
+    }
+
+    private void HideDoubleBetButton()
+    {
+        if (doubleButton != null)
+        {
+            doubleButton.gameObject.SetActive(false);
+            if(glowCoroutine != null)
+            {
+                StopCoroutine(glowCoroutine);
+                glowCoroutine = null;
+            }
+        }
+    }
+
+    private void StartGlowEffect()
+    {
+        if (glowCoroutine != null)
+        {
+            StopCoroutine(glowCoroutine);
+        }
+        glowCoroutine = StartCoroutine(GlowPulseEffect());
+    }
+
+    private IEnumerator GlowPulseEffect()
+    {
+        while (doubleButton.gameObject.activeInHierarchy)
+        {
+            // create smooth pulsing effect with a sine wave
+            float pulseValue = (Mathf.Sin(Time.time * glowSpeed) + 1f) / 2f;
+
+            // interpolate between normal and glow color
+            doubleButtonImage.color = Color.Lerp(normalColor, glowColor, pulseValue * glowIntensity);
+
+            yield return null;
+        }
     }
 
     void InitializeButtons()
@@ -131,6 +229,11 @@ public class PlinkoBettingManager : MonoBehaviour
 
             if(pendingBalls <= 0)
             {
+                // Show Double bet button if it was a loss
+                if(winAmount < currentBet)
+                {
+                    ShowDoubleBetButton();
+                }
                 // Reset betting state  
                 ResetBetState();
             }
