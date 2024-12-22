@@ -43,6 +43,9 @@ public class PlinkoBettingManager : MonoBehaviour
     private List<BetHistoryEntry> betHistory = new List<BetHistoryEntry>();
     private int currentBetIndex = 0;
 
+    private int pendingBalls = 0;
+    public System.Action onBetAmountChanged;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -85,6 +88,9 @@ public class PlinkoBettingManager : MonoBehaviour
 
             // Update button viuals based on affordability
             UpdateButtonStates();
+
+            // Notify listeners that bet amount changed
+            onBetAmountChanged?.Invoke();
         }
     }
 
@@ -97,11 +103,13 @@ public class PlinkoBettingManager : MonoBehaviour
         }
     }
 
-    public bool TryPlaceBet()
+    public bool TryPlaceBet(int ballCount)
     {
-       if(!betPlaced && GameManager.Instance.TrySpendMoney(currentBet))
+        float totalBetAmount = currentBet * ballCount;
+       if(!betPlaced && GameManager.Instance.TrySpendMoney(totalBetAmount))
         {
             betPlaced = true;
+            pendingBalls = ballCount;
             UpdateButtonStates();
             return true;
         }
@@ -119,8 +127,13 @@ public class PlinkoBettingManager : MonoBehaviour
             // Add to history
             AddBetToHistory(currentBet, multiplier, winAmount);
 
-            // Reset betting state
-            ResetBetState();
+            pendingBalls--;
+
+            if(pendingBalls <= 0)
+            {
+                // Reset betting state  
+                ResetBetState();
+            }
         }
     }
 
