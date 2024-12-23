@@ -98,7 +98,7 @@ public class PlinkoGameManagerScript : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator LaunchMultipleBalls()
+    public System.Collections.IEnumerator LaunchMultipleBalls()
     {
         for (int i =0; i < currentBallCount; i++)
         {

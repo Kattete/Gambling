@@ -43,6 +43,7 @@ public class PlinkoBettingManager : MonoBehaviour
     [SerializeField] private Button doubleButton;
     [SerializeField] private Image doubleButtonImage;
     [SerializeField] private TMP_Text doubleButtonText;
+    public PlinkoGameManagerScript gameManagerScript;
 
     [Header("Glow Effect Settings")]
     [SerializeField] private Color normalColor = new Color(1f, 0.5f, 0f);
@@ -59,6 +60,7 @@ public class PlinkoBettingManager : MonoBehaviour
 
     private int pendingBalls = 0;
     public System.Action onBetAmountChanged;
+    public System.Action<float, float, float> onBetResolved;
 
     private void Awake()
     {
@@ -75,6 +77,11 @@ public class PlinkoBettingManager : MonoBehaviour
         EnsureBetHistoryComponents();
         InitializeButtons();
         InitializeDoubleBetButton();
+        // Find the game manager if not assigned
+        if (gameManagerScript == null)
+        {
+            gameManagerScript = FindFirstObjectByType<PlinkoGameManagerScript>();
+        }
         // Set initil bet amount
         SelectBetAmount(0);
     }
@@ -123,6 +130,22 @@ public class PlinkoBettingManager : MonoBehaviour
                 }
             }
         }
+
+        // Force ball count to 1 for double bet
+        if(gameManagerScript != null && gameManagerScript.ballCountSlider != null)
+        {
+            gameManagerScript.ballCountSlider.value = 1;
+        }
+
+        // Try place bet and launch ball
+        if (TryPlaceBet(1))
+        {
+            if(gameManagerScript != null)
+            {
+                StartCoroutine(gameManagerScript.LaunchMultipleBalls());
+            }
+        }
+
         // Hide the button after use
         HideDoubleBetButton();
     }
@@ -221,6 +244,8 @@ public class PlinkoBettingManager : MonoBehaviour
         {
             float winAmount = currentBet * multiplier;
             GameManager.Instance.AddMoney(winAmount);
+
+            onBetResolved?.Invoke(currentBet, multiplier, winAmount);
 
             // Add to history
             AddBetToHistory(currentBet, multiplier, winAmount);
