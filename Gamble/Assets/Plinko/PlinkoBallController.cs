@@ -47,7 +47,7 @@ public class PlinkoBallController : MonoBehaviour
         // Add slight randomness to ball trajectory after peg hit
         Vector2 randomDeviation = Random.insideUnitCircle * 0.5f;
         rb.AddForce(randomDeviation, ForceMode2D.Impulse);
-
+        PlinkoSoundManager.Instance.PlayPegHit();
         // Reduce velocity based on bounce coefficient
         rb.linearVelocity *= bounceCoefficient;
     }

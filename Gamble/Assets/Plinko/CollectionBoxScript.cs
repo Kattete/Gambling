@@ -15,6 +15,7 @@ public class CollectionBoxScript : MonoBehaviour
         {
             PlinkoBettingManager.Instance.ProcessWin(multiplier);
             Destroy(collision.gameObject);
+            PlinkoSoundManager.Instance.PlayCollection(multiplier);
         }
     }
 }

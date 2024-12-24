@@ -465,7 +465,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 178181332}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.9999959
+  m_Size: 0.99999475
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4062,7 +4062,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 103638166}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999961
+  m_Size: 0.99999505
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5405,7 +5405,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1288311628
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5470,6 +5470,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1288311627}
   m_CullTransparentMesh: 1
+--- !u!1 &1306543826
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1306543828}
+  - component: {fileID: 1306543827}
+  m_Layer: 0
+  m_Name: PlinkoSoundManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1306543827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1306543826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eedf982f09adede45aab22427442a19c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pegHitSound:
+  - {fileID: 8300000, guid: 8d87b3823fb78ec4789a9d3902744fd1, type: 3}
+  collectionSound:
+  - {fileID: 8300000, guid: b2dcaca6cc1cc5742a31028d95618238, type: 3}
+  pegHitVolume: 0.1
+  collectionVolume: 0.6
+  minPitchVariation: 0.95
+  maxPitchVariation: 1.05
+--- !u!4 &1306543828
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1306543826}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 402.07245, y: 721.7291, z: -6.9609118}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1392149656
 GameObject:
   m_ObjectHideFlags: 0
@@ -7335,7 +7387,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.0008239746, y: 0.0008087158}
+  m_AnchoredPosition: {x: 0.000015258789, y: 0.000015258789}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1962124782
@@ -7709,3 +7761,4 @@ SceneRoots:
   - {fileID: 406798}
   - {fileID: 615320520}
   - {fileID: 738975140}
+  - {fileID: 1306543828}
