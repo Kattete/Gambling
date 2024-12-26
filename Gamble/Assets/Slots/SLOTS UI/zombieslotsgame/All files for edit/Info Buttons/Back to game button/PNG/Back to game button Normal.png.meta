@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Back to game button Normal_0: 8767332114752719716
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

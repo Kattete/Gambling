@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Top panel with shadow_0: 4397786905092980992
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

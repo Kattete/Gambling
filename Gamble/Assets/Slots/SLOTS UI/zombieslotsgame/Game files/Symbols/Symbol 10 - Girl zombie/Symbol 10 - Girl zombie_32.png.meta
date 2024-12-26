@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Symbol 10 - Girl zombie_32_0: -8098815201048007581
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Settings button Disable_0: 1881610825841622265
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Symbol 13 - Bonus game_00_0: 6967241103079735861
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

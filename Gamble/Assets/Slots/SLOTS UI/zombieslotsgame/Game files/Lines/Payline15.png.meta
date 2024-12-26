@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Payline15_0: -169342757368471788
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

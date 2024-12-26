@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Gamble button Hover_0: 2626420301627615891
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

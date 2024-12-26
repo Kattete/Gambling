@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Symbol 8 - Green zombie_20_0: -5425902487335473771
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

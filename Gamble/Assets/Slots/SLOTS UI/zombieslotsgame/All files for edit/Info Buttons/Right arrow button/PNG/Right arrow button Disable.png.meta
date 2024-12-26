@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Right arrow button Disable_0: 1742650672810226792
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

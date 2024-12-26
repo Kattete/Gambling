@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Spin button Disable_0: 3840964633072463265
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

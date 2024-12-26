@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Buy button Disable_0: -7545524182297484205
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

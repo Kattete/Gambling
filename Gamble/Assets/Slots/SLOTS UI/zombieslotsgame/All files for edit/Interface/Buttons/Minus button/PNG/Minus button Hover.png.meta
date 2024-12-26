@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Minus button Hover_0: 487628096481982412
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

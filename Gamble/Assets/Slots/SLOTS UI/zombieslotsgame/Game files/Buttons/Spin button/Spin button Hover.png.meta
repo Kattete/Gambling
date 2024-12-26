@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Spin button Hover_0: 2190597798676937147
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

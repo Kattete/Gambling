@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Add coins button Disable_0: -1545827830824945644
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

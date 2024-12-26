@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Add coins button Hover_0: 5997828481576889558
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

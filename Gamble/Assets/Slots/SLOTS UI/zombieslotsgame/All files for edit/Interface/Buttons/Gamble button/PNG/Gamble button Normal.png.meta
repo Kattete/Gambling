@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Gamble button Normal_0: -5240105067570321011
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

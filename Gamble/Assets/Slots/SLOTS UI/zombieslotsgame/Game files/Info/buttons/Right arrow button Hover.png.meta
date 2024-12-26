@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Right arrow button Hover_0: 5165993476822705832
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

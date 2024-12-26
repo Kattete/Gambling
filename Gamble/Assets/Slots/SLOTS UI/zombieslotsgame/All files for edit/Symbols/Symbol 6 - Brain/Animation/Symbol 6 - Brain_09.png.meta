@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Symbol 6 - Brain_09_0: 203498957104072631
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Hand 5 animation_15_0: -5893633196492045975
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
