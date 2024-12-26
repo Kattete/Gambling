@@ -19,6 +19,13 @@ public class SlotMachine : MonoBehaviour
     public float spinSpeed = 10f;
     private bool isSpinning = false;
 
+    // Store line renderers for visualizing paylines
+    public LineRenderer[] paylineRenderer = new LineRenderer[20];
+
+    // Add variables for win calculations
+    private float currentBet = 100f;
+    public float[] symbolValues;
+
     // Structure to represent a position on the grid
     [System.Serializable]
     public struct GridPosition
