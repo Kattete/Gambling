@@ -236,29 +236,89 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 645bff93b1846c2459f26097ff5d50c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  symbols:
+  - sprite: {fileID: 3379564760415512807, guid: f28092958ee481749b336e5ba535a568, type: 3}
+    weight: 100
+    value: 1
+    name: Jack
+  - sprite: {fileID: 1594380753897371786, guid: b2600633236fd0348893632a651913ac, type: 3}
+    weight: 100
+    value: 1
+    name: Queen
+  - sprite: {fileID: -2537780637513043774, guid: b1d35a20df925f84b9788fe1bab0006a, type: 3}
+    weight: 100
+    value: 1
+    name: King
+  - sprite: {fileID: -850520128406568022, guid: 01c5393c87843814c9469d2fcc64a674, type: 3}
+    weight: 100
+    value: 1
+    name: Ace
+  - sprite: {fileID: 4102462928942396053, guid: 2c68236b61af49447bb50960ad5634e2, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 1200804686367983638, guid: ead028c071733774c8fafb8b10a48b07, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: -4460219698865700437, guid: c8eec2835703e8348b02b4ec5a92e709, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 6205435221207154515, guid: f255f56fc829cbd4483d91bc4b1d7fd3, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: -1779109595959972713, guid: 227865b93c9c98b41b73926f54550573, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 6387474593199977070, guid: ed5537ed76d3b0e42a121ffdb0c4fe39, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 6387474593199977070, guid: ed5537ed76d3b0e42a121ffdb0c4fe39, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 6387474593199977070, guid: ed5537ed76d3b0e42a121ffdb0c4fe39, type: 3}
+    weight: 0
+    value: 0
+    name: 
+  - sprite: {fileID: 6387474593199977070, guid: ed5537ed76d3b0e42a121ffdb0c4fe39, type: 3}
+    weight: 0
+    value: 0
+    name: 
   reels:
   - {fileID: 279614362}
   - {fileID: 1592145466}
   - {fileID: 2114172191}
   - {fileID: 1032104362}
   - {fileID: 60433988}
-  symbolSprites:
-  - {fileID: 3379564760415512807, guid: fd784158ea336414db3dd38047c1a7b3, type: 3}
-  - {fileID: 1594380753897371786, guid: 05d7fadbf5c29454d97d9e11ac9abf5b, type: 3}
-  - {fileID: -2537780637513043774, guid: 705e98d05e9219d4d9d928c603fdcfd4, type: 3}
-  - {fileID: -850520128406568022, guid: 96f1d996f925f8d4e9e6bb5435ec7a0f, type: 3}
-  - {fileID: 4102462928942396053, guid: 8f0e5639db1cb7649b7417ecf7a77082, type: 3}
-  - {fileID: 1200804686367983638, guid: 308c4378c31ecca4ca10ac43def84952, type: 3}
-  - {fileID: -4460219698865700437, guid: ddb393afae699e443bc29eee4b6b77ef, type: 3}
-  - {fileID: 6205435221207154515, guid: 382fafddc0f35f94c871f5f53ae999cf, type: 3}
-  - {fileID: -1779109595959972713, guid: 4995ad4fdd36042449ac66b307447625, type: 3}
-  - {fileID: 6387474593199977070, guid: 4d1d1252c02640340be875170243f5ea, type: 3}
-  - {fileID: -2195252264000955542, guid: 31350171a06a99e41b0dc4ef7df571fc, type: 3}
-  - {fileID: -4855156365021033603, guid: 09d59d972de06b34db5d3144361837d0, type: 3}
-  - {fileID: 3314232539569165522, guid: b70e4180071cc9d449757f9ce297f16a, type: 3}
   spinButton: {fileID: 1540796339}
   spinDuration: 0.1
   spinSpeed: 10
+  paylineRenderers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1 &60433987
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,12 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[System.Serializable]
+public class SymbolConfig
+{
+    public Sprite sprite;
+    public float weight;
+    public float value;
+    public string name;
+}
+
 public class SlotMachine : MonoBehaviour
 {
+    public SymbolConfig[] symbols;
+    private float totalWeight;
+
     // Each reel will be a collumn of 3 symbols
     public Transform[] reels = new Transform[5];
-    // Store All possible symbols
-    public Sprite[] symbolSprites;
     // Matrix to store current symbols (3 rows X 5 columns)
     private Image[,] symbolMatrix = new Image[3, 5];
 
@@ -24,7 +34,6 @@ public class SlotMachine : MonoBehaviour
 
     // Add variables for win calculations
     private float currentBet = 100f;
-    public float[] symbolValues;
 
     // Structure to represent a position on the grid
     [System.Serializable]
@@ -44,22 +53,56 @@ public class SlotMachine : MonoBehaviour
 
     private void Start()
     {
-        // Initialize the symbol matrix
-        for (int reel = 0; reel < 5; reel++)
-        {
-            for(int row = 0; row < 3; row++)
-            {
-                // Get referecne to symbol image component
-                symbolMatrix[row,reel] = reels[reel].GetChild(row).GetComponent<Image>();
-            }
-        }
 
+#if UNITY_EDITOR
+        TestSymbolDistribution(10000);
+#endif
+        CalculateTotalWeight();
+        InitializeMatrix();
         InitializePaylines();
         SetupPaylineRenderers();
-
         spinButton.onClick.AddListener(StartSpin);
         // Set initiale random symbols
         PopulateInitialSymbols();
+    }
+
+    private void CalculateTotalWeight()
+    {
+        totalWeight = 0;
+        foreach(var symbol in symbols)
+        {
+            totalWeight += symbol.weight;
+        }
+    }
+
+    private SymbolConfig GetRandomSymbol()
+    {
+        float random = Random.Range(0f, totalWeight);
+        float weightSum = 0f;
+
+        foreach(var symbol in symbols)
+        {
+            weightSum += symbol.weight;
+            if(random <= weightSum)
+            {
+                return symbol;
+            }
+        }
+
+        return symbols[symbols.Length - 1];
+    }
+
+    private void InitializeMatrix()
+    {
+        // Initialize the symbol matrix
+        for (int reel = 0; reel < 5; reel++)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                // Get referecne to symbol image component
+                symbolMatrix[row, reel] = reels[reel].GetChild(row).GetComponent<Image>();
+            }
+        }
     }
 
     private void InitializePaylines()
@@ -126,8 +169,8 @@ public class SlotMachine : MonoBehaviour
         {
             for (int row = 0; row < 3; row++)
             {
-                int randomSymbol = Random.Range(0, symbolSprites.Length);
-                symbolMatrix[row, reel].sprite = symbolSprites[randomSymbol];
+                SymbolConfig randomSymbol = GetRandomSymbol();
+                symbolMatrix[row, reel].sprite = randomSymbol.sprite;
             }
         }
     }
@@ -166,8 +209,8 @@ public class SlotMachine : MonoBehaviour
             // Simulate spinning by changing symbols rapidly
             for (int row = 0; row < 3; row++)
             {
-                int randomSymbol = Random.Range(0, symbolSprites.Length);
-                symbolMatrix[row, reelIndex].sprite = symbolSprites[randomSymbol];
+                SymbolConfig randomSymbol = GetRandomSymbol();
+                symbolMatrix[row, reelIndex].sprite = randomSymbol.sprite;
             }
 
             elapsedTime += Time.deltaTime;
@@ -184,8 +227,8 @@ public class SlotMachine : MonoBehaviour
         // of different symbols appearing
         for (int row = 0; row < 3; row++)
         {
-            int randomSymbol = Random.Range(0, symbolSprites.Length);
-            symbolMatrix[row, reelIndex].sprite = symbolSprites[randomSymbol];
+            SymbolConfig selectedSymbol = GetRandomSymbol();
+            symbolMatrix[row, reelIndex].sprite = selectedSymbol.sprite;
         }
     }
 
@@ -262,17 +305,45 @@ public class SlotMachine : MonoBehaviour
     {
         // Get the winning symbol
         GridPosition firstPos = paylines[paylineIndex][0];
-        Sprite winningSymbol = symbolMatrix[firstPos.row, firstPos.col].sprite;
+        Sprite winningSprite = symbolMatrix[firstPos.row, firstPos.col].sprite;
 
-        // Find the symbol's index to get its value
-        int symbolIndex = System.Array.IndexOf(symbolSprites, winningSymbol);
-        float symbolValue = symbolValues[symbolIndex];
+        SymbolConfig winninSymbol = System.Array.Find(symbols, s => s.sprite == winningSprite);
 
-        // Calculate win based on match count and current bet
-        float winAmount = symbolValue * matchCount * currentBet;
+        if(winninSymbol != null)
+        {
+            // Calculate win based on match count and current bet
+            float winAmount = winninSymbol.value * matchCount * currentBet;
 
-        Debug.Log($"Win on payline {paylineIndex}: {winAmount} credits (Symbol: {symbolIndex}, Matches: {matchCount})");
-        // Here you would update the UI to show the win amount
+            Debug.Log($"Win on payline {paylineIndex}: {winAmount} credits (Symbol: {winninSymbol.name}, Matches: {matchCount})" + $"Value: {winninSymbol.value}");
+            // Here you would update the UI to show the win amount
+        }
+    }
+
+    // Debug method to test symbol distribution
+    public void TestSymbolDistribution(int spins)
+    {
+        Dictionary<string, int> distribution = new Dictionary<string, int>();
+
+        // Initialize counters
+        foreach (var symbol in symbols)
+        {
+            distribution[symbol.name] = 0;
+        }
+
+        // Simulate spins
+        for (int i = 0; i < spins; i++)
+        {
+            SymbolConfig symbol = GetRandomSymbol();
+            distribution[symbol.name]++;
+        }
+
+        // Log results
+        Debug.Log($"Distribution over {spins} spins:");
+        foreach (var kvp in distribution)
+        {
+            float percentage = (float)kvp.Value / spins * 100f;
+            Debug.Log($"{kvp.Key}: {percentage:F2}% ({kvp.Value} times)");
+        }
     }
 
 }
