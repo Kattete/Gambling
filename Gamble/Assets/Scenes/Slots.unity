@@ -189,7 +189,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 1198360859}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -241,54 +241,67 @@ MonoBehaviour:
     weight: 100
     value: 1
     name: Jack
+    minMatchesRequired: 3
   - sprite: {fileID: 1594380753897371786, guid: b2600633236fd0348893632a651913ac, type: 3}
     weight: 100
     value: 1
     name: Queen
+    minMatchesRequired: 3
   - sprite: {fileID: -2537780637513043774, guid: b1d35a20df925f84b9788fe1bab0006a, type: 3}
     weight: 100
     value: 1
     name: King
+    minMatchesRequired: 3
   - sprite: {fileID: -850520128406568022, guid: 01c5393c87843814c9469d2fcc64a674, type: 3}
     weight: 100
     value: 1.5
     name: Ace
+    minMatchesRequired: 3
   - sprite: {fileID: 4102462928942396053, guid: 2c68236b61af49447bb50960ad5634e2, type: 3}
     weight: 50
     value: 3
     name: Eye
+    minMatchesRequired: 3
   - sprite: {fileID: 1200804686367983638, guid: ead028c071733774c8fafb8b10a48b07, type: 3}
     weight: 50
     value: 3
     name: Brain
+    minMatchesRequired: 3
   - sprite: {fileID: -4460219698865700437, guid: c8eec2835703e8348b02b4ec5a92e709, type: 3}
     weight: 50
     value: 5
     name: Skull
+    minMatchesRequired: 3
   - sprite: {fileID: 6205435221207154515, guid: f255f56fc829cbd4483d91bc4b1d7fd3, type: 3}
     weight: 15
     value: 5
     name: Green Zombie
+    minMatchesRequired: 2
   - sprite: {fileID: -1779109595959972713, guid: 227865b93c9c98b41b73926f54550573, type: 3}
     weight: 15
     value: 10
     name: Blue Zombie
+    minMatchesRequired: 2
   - sprite: {fileID: 6387474593199977070, guid: ed5537ed76d3b0e42a121ffdb0c4fe39, type: 3}
     weight: 15
     value: 25
     name: Girl Zombie
+    minMatchesRequired: 2
   - sprite: {fileID: -2195252264000955542, guid: 68e115d72f1cf3e41b4ebda6337bf5ac, type: 3}
     weight: 10
     value: 50
     name: Wild
+    minMatchesRequired: 1
   - sprite: {fileID: -4855156365021033603, guid: 08dd1756ad0549947aabcb481cc79f1c, type: 3}
     weight: 7
     value: 10
     name: Free Spins
+    minMatchesRequired: 3
   - sprite: {fileID: 3314232539569165522, guid: 4172996410315404497045ce3e24c369, type: 3}
     weight: 5
     value: 100
     name: Bonus
+    minMatchesRequired: 3
   reels:
   - {fileID: 279614362}
   - {fileID: 1592145466}
@@ -298,27 +311,7 @@ MonoBehaviour:
   spinButton: {fileID: 1540796339}
   spinDuration: 0.1
   spinSpeed: 10
-  paylineRenderers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  paylinePrefab: {fileID: 8146893268070456772, guid: c08bf2b2cac79fb4ca0d632f844f0d9f, type: 3}
 --- !u!1 &60433987
 GameObject:
   m_ObjectHideFlags: 0

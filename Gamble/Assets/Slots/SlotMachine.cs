@@ -10,6 +10,7 @@ public class SymbolConfig
     public float weight;
     public float value;
     public string name;
+    public int minMatchesRequired = 3;
 }
 
 public class SlotMachine : MonoBehaviour
@@ -29,11 +30,16 @@ public class SlotMachine : MonoBehaviour
     public float spinSpeed = 10f;
     private bool isSpinning = false;
 
-    // Store line renderers for visualizing paylines
-    public LineRenderer[] paylineRenderers = new LineRenderer[20];
+    // Store Paylines
+    public Image paylinePrefab;
+    private Image[] paylineImages = new Image[20];
 
     // Add variables for win calculations
     private float currentBet = 100f;
+
+    // Reel tracking
+    private bool[] reelFinished = new bool[5];
+    private int spinningReels = 0;
 
     // Structure to represent a position on the grid
     [System.Serializable]
@@ -60,10 +66,41 @@ public class SlotMachine : MonoBehaviour
         CalculateTotalWeight();
         InitializeMatrix();
         InitializePaylines();
-        SetupPaylineRenderers();
+        SetuPaylineSprites();
         spinButton.onClick.AddListener(StartSpin);
         // Set initiale random symbols
         PopulateInitialSymbols();
+    }
+
+    private IEnumerator SpinAllReels()
+    {
+        Debug.Log("=== Starting New Spin ===");
+        isSpinning = true;
+
+        // Reset completion tracking
+        spinningReels = 5; // We have 5 reels total
+        for (int i = 0; i < 5; i++)
+        {
+            reelFinished[i] = false;
+        }
+
+        // Start spinning each reel with delay
+        for (int reel = 0; reel < 5; reel++)
+        {
+            StartCoroutine(SpinReel(reel));
+            yield return new WaitForSeconds(0.2f); // Delay between starting each reel
+        }
+
+        // Wait until ALL reels are finished
+        while (spinningReels > 0)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        // Now that all reels are definitely finished, check for wins
+        Debug.Log("All reels have finished spinning - Checking for wins");
+        CheckWinningCombinations();
+        isSpinning = false;
     }
 
     private void CalculateTotalWeight()
@@ -131,35 +168,40 @@ public class SlotMachine : MonoBehaviour
 
     }
 
-    private void SetupPaylineRenderers()
+    private void SetuPaylineSprites()
     {
+        // Create parent object for organization
+        GameObject paylineParent = new GameObject("Payline_Images");
+        paylineParent.transform.SetParent(transform);
+        RectTransform parentRect = paylineParent.AddComponent<RectTransform>();
+
         for (int i = 0; i < paylines.Length; i++)
         {
-            GameObject lineObj = new GameObject($"Payline_{i}");
-            lineObj.transform.SetParent(transform);
+            // Instantiate payline image
+            Image paylineImage = Instantiate(paylinePrefab, parentRect);
+            paylineImage.gameObject.name = $"Payline_Image_{i}";
 
-            LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-            lr.startWidth = 0.1f;
-            lr.endWidth = 0.1f;
-            lr.material = new Material(Shader.Find("Sprites/Default"));
-            lr.startColor = Color.yellow; // You can customize the color
-            lr.endColor = Color.yellow;
-            lr.enabled = false;
+            // Set the image to cover the path between first and last symbol
+            RectTransform imageRect = paylineImage.rectTransform;
+            GridPosition startPos = paylines[i][0];
+            GridPosition endPos = paylines[i][4];
 
-            // Convert grid positions to world space positions
-            Vector3[] positions = new Vector3[5]; // Since each payline has 5 positions
-            for (int j = 0; j < 5; j++)
-            {
-                // Get the RectTransform position of the symbol at this payline position
-                GridPosition pos = paylines[i][j];
-                RectTransform symbolRect = symbolMatrix[pos.row, pos.col].rectTransform;
-                positions[j] = symbolRect.position;
-            }
+            // Get positions of start and end symbols
+            RectTransform startSymbol = symbolMatrix[startPos.row, startPos.col].rectTransform;
+            RectTransform endSymbol = symbolMatrix[endPos.row, endPos.col].rectTransform;
 
-            lr.positionCount = positions.Length;
-            lr.SetPositions(positions);
+            // Position and size the payline image
+            imageRect.position = Vector3.Lerp(startSymbol.position, endSymbol.position, 0.5f);
+            float distance = Vector3.Distance(startSymbol.position, endSymbol.position);
+            imageRect.sizeDelta = new Vector2(distance, 10f); // Adjust height as needed
 
-            paylineRenderers[i] = lr;
+            // Calculate rotation to point from start to end
+            Vector3 direction = endSymbol.position - startSymbol.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            imageRect.rotation = Quaternion.Euler(0, 0, angle);
+
+            paylineImage.enabled = false;
+            paylineImages[i] = paylineImage;
         }
     }
 
@@ -184,22 +226,6 @@ public class SlotMachine : MonoBehaviour
         }
     }
 
-    private IEnumerator SpinAllReels()
-    {
-        // Spin each reel with a slight delay between them
-        for (int reel = 0; reel < 5; reel++)
-        {
-            StartCoroutine(SpinReel(reel));
-            yield return new WaitForSeconds(0.2f); // Delay between reels
-        }
-
-        yield return new WaitForSeconds(spinDuration);
-
-        // Check for wins after all reels stop
-        CheckWinningCombinations();
-        isSpinning = false;
-    }
-
     private IEnumerator SpinReel(int reelIndex)
     {
         float elapsedTime = 0f;
@@ -219,6 +245,11 @@ public class SlotMachine : MonoBehaviour
 
         // Set final symbols for this reel
         SetFinalReelSymbols(reelIndex);
+
+        // Mark reel as finished
+        reelFinished[reelIndex] = true;
+        spinningReels--;
+        Debug.Log($"Reel {reelIndex} finished. Remaining spinning reels: {spinningReels}");
     }
 
     private void SetFinalReelSymbols(int reelIndex)
@@ -234,9 +265,27 @@ public class SlotMachine : MonoBehaviour
 
     private void CheckWinningCombinations()
     {
-        // Check all paylines
+        // verify done spinning
+        if(spinningReels > 0)
+        {
+            Debug.LogError("Attempting to check wins while reels are still spinning!");
+            return;
+        }
+
+
+        Debug.Log("--- Checking for winning combinations ---");
         for (int i = 0; i < paylines.Length; i++)
         {
+            // Log the symbols in this payline for debugging
+            string paylineSymbols = "Payline " + i + ": ";
+            foreach (var pos in paylines[i])
+            {
+                SymbolConfig symbol = System.Array.Find(symbols,
+                    s => s.sprite == symbolMatrix[pos.row, pos.col].sprite);
+                paylineSymbols += symbol?.name + " > ";
+            }
+            Debug.Log(paylineSymbols);
+
             CheckPayline(i);
         }
     }
@@ -245,77 +294,93 @@ public class SlotMachine : MonoBehaviour
     {
         GridPosition[] currentPayline = paylines[paylineIndex];
 
-        // Get the first symbol in the payline as reference
-        Sprite referenceSymbol = symbolMatrix[currentPayline[0].row, currentPayline[0].col].sprite;
-        int matchCount = 1;
+        // Get the first symbol and its configuration
+        Sprite firstSymbol = symbolMatrix[currentPayline[0].row, currentPayline[0].col].sprite;
+        SymbolConfig symbolConfig = System.Array.Find(symbols, s => s.sprite == firstSymbol);
 
-        // Check subsequent positions
+        if (symbolConfig == null)
+        {
+            Debug.LogError($"Symbol configuration not found for sprite at position {currentPayline[0].row}, {currentPayline[0].col}");
+            return;
+        }
+
+        int consecutiveMatches = 1; // Start with 1 for the first symbol
+
+        // Check subsequent positions for matches
         for (int pos = 1; pos < currentPayline.Length; pos++)
         {
             GridPosition currentPos = currentPayline[pos];
-            if (symbolMatrix[currentPos.row, currentPos.col].sprite == referenceSymbol)
+            Sprite currentSymbol = symbolMatrix[currentPos.row, currentPos.col].sprite;
+
+            if (currentSymbol == firstSymbol)
             {
-                matchCount++;
+                consecutiveMatches++;
             }
             else
             {
-                break; // Stop checking if we find a non-matching symbol
+                // Stop counting when we find a non-matching symbol
+                break;
             }
         }
 
-        if (matchCount >= 3)
+        // Check if we have enough matches based on the symbol's requirement
+        if (consecutiveMatches >= symbolConfig.minMatchesRequired)
         {
-            // We have a win on this payline
-            StartCoroutine(HighlightWinningPayline(paylineIndex, matchCount));
+            Debug.Log($"Win on payline {paylineIndex} with {consecutiveMatches} matches of symbol {symbolConfig.name}");
+            StartCoroutine(HighlightWinningPayline(paylineIndex, consecutiveMatches));
+
+            // Calculate win amount based on the number of matches
+            CalculateWinAmount(paylineIndex, consecutiveMatches);
         }
     }
 
     private IEnumerator HighlightWinningPayline(int paylineIndex, int matchCount)
     {
-        // Get the line renderer for this payline
-        LineRenderer lineRenderer = paylineRenderers[paylineIndex];
+        Image paylineImage = paylineImages[paylineIndex];
+        paylineImage.enabled = true;
 
-        // Make the line visible
-        lineRenderer.enabled = true;
-
-        // Animate the line
         float elapsed = 0f;
         float duration = 2f;
 
         while (elapsed < duration)
         {
-            // Create a pulsing effect
             float alpha = Mathf.PingPong(elapsed * 2, 1f);
-            Color color = lineRenderer.startColor;
-            lineRenderer.startColor = new Color(color.r, color.g, color.b, alpha);
-            lineRenderer.endColor = new Color(color.r, color.g, color.b, alpha);
+            Color color = paylineImage.color;
+            paylineImage.color = new Color(color.r, color.g, color.b, alpha);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Hide the line after animation
-        lineRenderer.enabled = false;
-
-        // Calculate and display win amount
+        paylineImage.enabled = false;
         CalculateWinAmount(paylineIndex, matchCount);
     }
 
     private void CalculateWinAmount(int paylineIndex, int matchCount)
     {
-        // Get the winning symbol
+        // Get the winning symbol from the first position in the payline
         GridPosition firstPos = paylines[paylineIndex][0];
         Sprite winningSprite = symbolMatrix[firstPos.row, firstPos.col].sprite;
 
-        SymbolConfig winninSymbol = System.Array.Find(symbols, s => s.sprite == winningSprite);
+        // Find the corresponding symbol configuration
+        SymbolConfig winningSymbol = System.Array.Find(symbols, s => s.sprite == winningSprite);
 
-        if(winninSymbol != null)
+        if (winningSymbol != null)
         {
-            // Calculate win based on match count and current bet
-            float winAmount = winninSymbol.value * matchCount * currentBet;
+            // Only calculate win if we meet the minimum match requirement
+            if (matchCount >= winningSymbol.minMatchesRequired)
+            {
+                // Calculate win based on match count and current bet
+                float winAmount = winningSymbol.value * matchCount * currentBet;
 
-            Debug.Log($"Win on payline {paylineIndex}: {winAmount} credits (Symbol: {winninSymbol.name}, Matches: {matchCount})" + $"Value: {winninSymbol.value}");
-            // Here you would update the UI to show the win amount
+                Debug.Log($"Win on payline {paylineIndex}:" +
+                         $"\nSymbol: {winningSymbol.name}" +
+                         $"\nMatches: {matchCount}/{winningSymbol.minMatchesRequired} required" +
+                         $"\nValue: {winningSymbol.value}" +
+                         $"\nWin Amount: {winAmount} credits");
+
+                // Here you would update the UI to show the win amount
+            }
         }
     }
 
