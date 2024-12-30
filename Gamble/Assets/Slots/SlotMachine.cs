@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.InputManagerEntry;
 
 [System.Serializable]
 public class SymbolConfig
@@ -11,6 +14,8 @@ public class SymbolConfig
     public float value;
     public string name;
     public int minMatchesRequired = 3;
+    public bool isWild = false;
+    public bool isFreeSpinSymbol = false;
 }
 
 public class SlotMachine : MonoBehaviour
@@ -41,6 +46,20 @@ public class SlotMachine : MonoBehaviour
     private bool[] reelFinished = new bool[5];
     private int spinningReels = 0;
 
+    // Free spins
+    private bool isInFreeSpins = false;
+    private int remainingFreeSpins = 0;
+    private int initialFreeSpins = 8;
+    private int retriggerFreeSpins = 5;
+    public GameObject freeSpinsPanel;
+    public Button freeSpinsButton;
+    private bool waitingForFreeSpinsToStart = false;
+    public GameObject freeSpinsTextSprite;
+    public Sprite[] numberSprites;
+    public GameObject numberContainer;
+    public float spacingBetweenDigits = 30f;
+    private List<Image> digitImages = new List<Image>();
+
     // Structure to represent a position on the grid
     [System.Serializable]
     public struct GridPosition
@@ -59,10 +78,7 @@ public class SlotMachine : MonoBehaviour
 
     private void Start()
     {
-
-#if UNITY_EDITOR
-        TestSymbolDistribution(10000);
-#endif
+        SetupNumberDisplay();
         CalculateTotalWeight();
         InitializeMatrix();
         InitializePaylines();
@@ -71,6 +87,294 @@ public class SlotMachine : MonoBehaviour
         // Set initiale random symbols
         PopulateInitialSymbols();
     }
+
+    //---------------Start Free Spins------------------
+
+    private void CheckFreeSpinsSymbols()
+    {
+        Dictionary<SymbolConfig, int> freeSpinSymbolCount = new Dictionary<SymbolConfig, int>();
+
+        // Count free spin symbols across all positions
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                Sprite currentSprite = symbolMatrix[row, col].sprite;
+                SymbolConfig symbolConfig = System.Array.Find(symbols, s => s.sprite == currentSprite);
+
+                if (symbolConfig != null && symbolConfig.isFreeSpinSymbol)
+                {
+                    if (!freeSpinSymbolCount.ContainsKey(symbolConfig))
+                    {
+                        freeSpinSymbolCount[symbolConfig] = 0;
+                    }
+                    freeSpinSymbolCount[symbolConfig]++;
+                }
+            }
+        }
+
+        // Check for free spins activation or retrigger
+        foreach (var kvp in freeSpinSymbolCount)
+        {
+            SymbolConfig symbol = kvp.Key;
+            int count = kvp.Value;
+
+            if (!isInFreeSpins && count >= 3)
+            {
+                StartFreeSpins();
+            }
+            else if (isInFreeSpins && count >= 2)
+            {
+                RetriggerFreeSpins();
+            }
+        }
+    }
+
+    private void SetupNumberDisplay()
+    {
+        // First, clear any existing digit images
+        foreach (var digitImage in digitImages)
+        {
+            if (digitImage != null)
+            {
+                Destroy(digitImage.gameObject);
+            }
+        }
+        digitImages.Clear();
+
+        // Make sure we have a container
+        if (numberContainer == null)
+        {
+            Debug.LogError("Number container is not assigned!");
+            return;
+        }
+    }
+
+    // This method updates the display with new numbers
+    private void UpdateFreeSpinsDisplay(int number)
+    {
+        // Convert number to digits
+        string numberStr = number.ToString();
+
+        // Create or update digit images as needed
+        while (digitImages.Count < numberStr.Length)
+        {
+            // Create new digit holder
+            GameObject digitObj = new GameObject($"Digit_{digitImages.Count}");
+            digitObj.transform.SetParent(numberContainer.transform, false);
+
+            // Add Image component
+            Image digitImage = digitObj.AddComponent<Image>();
+            digitImages.Add(digitImage);
+
+            // Set proper UI settings
+            RectTransform rectTransform = digitImage.rectTransform;
+            rectTransform.sizeDelta = new Vector2(50f, 50f); // Adjust size as needed
+        }
+
+        // Remove excess digit images if number is smaller than before
+        while (digitImages.Count > numberStr.Length)
+        {
+            Image lastDigit = digitImages[digitImages.Count - 1];
+            digitImages.RemoveAt(digitImages.Count - 1);
+            Destroy(lastDigit.gameObject);
+        }
+
+        // Position and update sprites for each digit
+        for (int i = 0; i < numberStr.Length; i++)
+        {
+            int digit = int.Parse(numberStr[i].ToString());
+            Image digitImage = digitImages[i];
+
+            // Set the sprite for this digit
+            digitImage.sprite = numberSprites[digit];
+
+            // Position the digit
+            RectTransform rectTransform = digitImage.rectTransform;
+            rectTransform.anchoredPosition = new Vector2(i * spacingBetweenDigits, 0);
+        }
+    }
+
+    private void StartFreeSpins()
+    {
+        isInFreeSpins = true;
+        remainingFreeSpins = initialFreeSpins;
+        waitingForFreeSpinsToStart = true;
+
+        UpdateFreeSpinsUI();
+
+        // Play activation animation/sound
+        StartCoroutine(PlayFreeSpinsActivation());
+    }
+
+    private void RetriggerFreeSpins()
+    {
+        remainingFreeSpins += retriggerFreeSpins;
+        UpdateFreeSpinsUI();
+
+        // Play retrigger animation/sound
+        StartCoroutine(PlayRetriggerAnimation());
+    }
+
+    private void UpdateFreeSpinsUI()
+    {
+        // Show/hide the free spins display based on state
+        if (freeSpinsTextSprite != null)
+        {
+            freeSpinsTextSprite.gameObject.SetActive(isInFreeSpins);
+        }
+        if (numberContainer != null)
+        {
+            numberContainer.SetActive(isInFreeSpins);
+        }
+
+        // Update the number display
+        if (isInFreeSpins)
+        {
+            UpdateFreeSpinsDisplay(remainingFreeSpins);
+        }
+
+        // Update panel visibility
+        if (freeSpinsPanel != null)
+        {
+            freeSpinsPanel.SetActive(isInFreeSpins && waitingForFreeSpinsToStart);
+        }
+    }
+
+    // New coroutine to handle panel fade out
+    private IEnumerator HideFreeSpinsPanel()
+    {
+        if (freeSpinsPanel != null)
+        {
+            // Get or add CanvasGroup component
+            CanvasGroup panelCanvas = freeSpinsPanel.GetComponent<CanvasGroup>();
+            if (panelCanvas == null)
+            {
+                panelCanvas = freeSpinsPanel.AddComponent<CanvasGroup>();
+            }
+
+            // Fade out animation
+            float elapsed = 0;
+            float duration = 0.5f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                panelCanvas.alpha = 1 - (elapsed / duration);
+                yield return null;
+            }
+
+            // Finally hide the panel
+            freeSpinsPanel.SetActive(false);
+        }
+    }
+
+    private void EndFreeSpins()
+    {
+        isInFreeSpins = false;
+        remainingFreeSpins = 0;
+        waitingForFreeSpinsToStart = false;
+        UpdateFreeSpinsUI();
+
+        // Play end animation/sound
+        StartCoroutine(PlayFreeSpinsEnd());
+    }
+
+    // Animation coroutines
+    private IEnumerator PlayFreeSpinsActivation()
+    {
+        // Add your activation animation here
+        Debug.Log("Free Spins Activated! 8 Free Spins Awarded!");
+
+        // Enable the panel and text
+        if (freeSpinsPanel != null)
+        {
+            freeSpinsPanel.SetActive(true);
+
+            // Optional: Animate panel appearing
+            CanvasGroup panelCanvas = freeSpinsPanel.GetComponent<CanvasGroup>();
+            if (panelCanvas != null)
+            {
+                panelCanvas.alpha = 0;
+                float elapsed = 0;
+                while (elapsed < 1f)
+                {
+                    elapsed += Time.deltaTime;
+                    panelCanvas.alpha = elapsed;
+                    yield return null;
+                }
+            }
+        }
+
+        if (freeSpinsButton != null)
+        {
+            // Setup the button to start free spins when clicked
+            freeSpinsButton.onClick.RemoveAllListeners();
+            freeSpinsButton.onClick.AddListener(BeginFreeSpinsSequence);
+            freeSpinsButton.gameObject.SetActive(true);
+        }
+        yield return new WaitForSeconds(2f);
+    }
+
+    private void BeginFreeSpinsSequence()
+    {
+        if (waitingForFreeSpinsToStart)
+        {
+            waitingForFreeSpinsToStart = false;
+
+            StartCoroutine(HideFreeSpinsPanel());
+
+            // Hide the start button
+            if (freeSpinsButton != null)
+            {
+                freeSpinsButton.gameObject.SetActive(false);
+            }
+
+            // Start the first spin
+            StartCoroutine(AutoSpinSequence());
+        }
+    }
+    private IEnumerator AutoSpinSequence()
+    {
+        while (remainingFreeSpins > 0 && isInFreeSpins)
+        {
+            if (!isSpinning)
+            {
+                remainingFreeSpins--;
+                UpdateFreeSpinsUI();
+
+                // Start a spin
+                isSpinning = true;
+                StartCoroutine(SpinAllReels());
+
+                // Wait for current spin to complete plus a delay
+                yield return new WaitUntil(() => !isSpinning);
+                yield return new WaitForSeconds(1f); // Delay between spins
+            }
+            yield return null;
+        }
+
+        // When spins are complete
+        if (remainingFreeSpins <= 0)
+        {
+            EndFreeSpins();
+        }
+    }
+
+
+    private IEnumerator PlayRetriggerAnimation()
+    {
+        // Add your retrigger animation here
+        Debug.Log("Free Spins Retriggered! +5 Free Spins!");
+        yield return new WaitForSeconds(1f);
+    }
+    private IEnumerator PlayFreeSpinsEnd()
+    {
+        // Add your end animation here
+        Debug.Log("Free Spins Complete!");
+        yield return new WaitForSeconds(2f);
+    }
+
+    //---------------End Free Spins--------------------
 
     private IEnumerator SpinAllReels()
     {
@@ -100,6 +404,8 @@ public class SlotMachine : MonoBehaviour
         // Now that all reels are definitely finished, check for wins
         Debug.Log("All reels have finished spinning - Checking for wins");
         CheckWinningCombinations();
+        CheckFreeSpinsSymbols();
+
         isSpinning = false;
     }
 
@@ -177,31 +483,63 @@ public class SlotMachine : MonoBehaviour
 
         for (int i = 0; i < paylines.Length; i++)
         {
-            // Instantiate payline image
-            Image paylineImage = Instantiate(paylinePrefab, parentRect);
-            paylineImage.gameObject.name = $"Payline_Image_{i}";
+            GridPosition[] currentPayline = paylines[i];
 
-            // Set the image to cover the path between first and last symbol
-            RectTransform imageRect = paylineImage.rectTransform;
-            GridPosition startPos = paylines[i][0];
-            GridPosition endPos = paylines[i][4];
+            // Create segments for each part of the payline
+            for (int j = 0; j < currentPayline.Length - 1; j++)
+            {
+                // Create line segment
+                Image lineSegment = Instantiate(paylinePrefab, parentRect);
+                lineSegment.gameObject.name = $"Payline_{i}_Segment_{j}";
 
-            // Get positions of start and end symbols
-            RectTransform startSymbol = symbolMatrix[startPos.row, startPos.col].rectTransform;
-            RectTransform endSymbol = symbolMatrix[endPos.row, endPos.col].rectTransform;
+                // Get start and end positions for this segment
+                RectTransform startSymbol = symbolMatrix[currentPayline[j].row, currentPayline[j].col].rectTransform;
+                RectTransform endSymbol = symbolMatrix[currentPayline[j + 1].row, currentPayline[j + 1].col].rectTransform;
 
-            // Position and size the payline image
-            imageRect.position = Vector3.Lerp(startSymbol.position, endSymbol.position, 0.5f);
-            float distance = Vector3.Distance(startSymbol.position, endSymbol.position);
-            imageRect.sizeDelta = new Vector2(distance, 10f); // Adjust height as needed
+                // Position the line segment
+                RectTransform segmentRect = lineSegment.rectTransform;
+                Vector3 startPos = startSymbol.position;
+                Vector3 endPos = endSymbol.position;
 
-            // Calculate rotation to point from start to end
-            Vector3 direction = endSymbol.position - startSymbol.position;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            imageRect.rotation = Quaternion.Euler(0, 0, angle);
+                // Calculate center point between start and end
+                segmentRect.position = Vector3.Lerp(startPos, endPos, 0.5f);
 
-            paylineImage.enabled = false;
-            paylineImages[i] = paylineImage;
+                // Calculate length and rotation
+                float distance = Vector3.Distance(startPos, endPos);
+                segmentRect.sizeDelta = new Vector2(distance, 10f); // Adjust line thickness as needed
+
+                // Calculate and set rotation
+                Vector3 direction = endPos - startPos;
+                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                segmentRect.rotation = Quaternion.Euler(0, 0, angle);
+
+                // Start with line hidden
+                lineSegment.enabled = false;
+
+                // Store reference to this segment
+                if (paylineImages[i] == null)
+                {
+                    paylineImages[i] = lineSegment;
+                }
+                else
+                {
+                    // If we already have a segment, make this one follow the same enable/disable state
+                    int index = i;
+                    Image firstSegment = paylineImages[i];
+                    // Subscribe to enable/disable events of the first segment
+                    StartCoroutine(LinkSegmentToFirst(firstSegment, lineSegment));
+                }
+            }
+        }
+    }
+
+    private IEnumerator LinkSegmentToFirst(Image firstSegment, Image segment)
+    {
+        while (true)
+        {
+            segment.enabled = firstSegment.enabled;
+            segment.color = firstSegment.color;
+            yield return null;
         }
     }
 
@@ -221,6 +559,18 @@ public class SlotMachine : MonoBehaviour
     {
         if (!isSpinning)
         {
+            if (isInFreeSpins && remainingFreeSpins > 0)
+            {
+                remainingFreeSpins--;
+                UpdateFreeSpinsUI();
+            }
+            else if (isInFreeSpins && remainingFreeSpins <= 0)
+            {
+                // End free spins mode
+                EndFreeSpins();
+                return;
+            }
+
             isSpinning = true;
             StartCoroutine(SpinAllReels());
         }
@@ -262,7 +612,6 @@ public class SlotMachine : MonoBehaviour
             symbolMatrix[row, reelIndex].sprite = selectedSymbol.sprite;
         }
     }
-
     private void CheckWinningCombinations()
     {
         // verify done spinning
@@ -305,14 +654,40 @@ public class SlotMachine : MonoBehaviour
         }
 
         int consecutiveMatches = 1; // Start with 1 for the first symbol
+        bool checkingWildWin = symbolConfig.isWild;
+        SymbolConfig targetSymbol = symbolConfig;
 
         // Check subsequent positions for matches
         for (int pos = 1; pos < currentPayline.Length; pos++)
         {
             GridPosition currentPos = currentPayline[pos];
-            Sprite currentSymbol = symbolMatrix[currentPos.row, currentPos.col].sprite;
+            Sprite currentSymbolSprite = symbolMatrix[currentPos.row, currentPos.col].sprite;
+            SymbolConfig currentSymbol = System.Array.Find(symbols, s => s.sprite == currentSymbolSprite);
 
-            if (currentSymbol == firstSymbol)
+            if (currentSymbol == null) continue;
+
+            bool isMatch = false;
+            if (checkingWildWin)
+            {
+                isMatch = currentSymbol.isWild;
+            }
+            else
+            {
+                // Regular symbol matching - count both exact matches and wilds
+                isMatch = currentSymbolSprite == firstSymbol || currentSymbol.isWild;
+
+                // If this is a wild, it can substitute for our target symbol
+                if (currentSymbol.isWild)
+                {
+                    // Use the higher value between the wild and the symbol it's substituting for
+                    if (currentSymbol.value > targetSymbol.value)
+                    {
+                        targetSymbol = currentSymbol;
+                    }
+                }
+            }
+
+            if (isMatch)
             {
                 consecutiveMatches++;
             }
@@ -323,91 +698,80 @@ public class SlotMachine : MonoBehaviour
             }
         }
 
+        int requiredMatches = checkingWildWin ? 2 : targetSymbol.minMatchesRequired;
+
         // Check if we have enough matches based on the symbol's requirement
-        if (consecutiveMatches >= symbolConfig.minMatchesRequired)
+        if (consecutiveMatches >= requiredMatches)
         {
-            Debug.Log($"Win on payline {paylineIndex} with {consecutiveMatches} matches of symbol {symbolConfig.name}");
-            StartCoroutine(HighlightWinningPayline(paylineIndex, consecutiveMatches));
+            Debug.Log($"Win on payline {paylineIndex} with {consecutiveMatches} matches of symbol {symbolConfig.name} (Wild Win: {checkingWildWin})");
+            CheckFreeSpinsSymbols();
+            StartCoroutine(HighlightWinningPayline(paylineIndex, consecutiveMatches, targetSymbol));
 
             // Calculate win amount based on the number of matches
-            CalculateWinAmount(paylineIndex, consecutiveMatches);
+            CalculateWinAmount(paylineIndex, consecutiveMatches, targetSymbol);
         }
     }
 
-    private IEnumerator HighlightWinningPayline(int paylineIndex, int matchCount)
+    private IEnumerator HighlightWinningPayline(int paylineIndex, int matchCount, SymbolConfig targetSymbol)
     {
-        Image paylineImage = paylineImages[paylineIndex];
-        paylineImage.enabled = true;
+        // Find all segments for this payline
+    Image[] segments = GetPaylineSegments(paylineIndex);
+
+    // Enable all segments
+    foreach (var segment in segments)
+            {
+                segment.enabled = true;
+            }
 
         float elapsed = 0f;
-        float duration = 2f;
+        float duration = 4f;  // Increased duration for better visibility
 
         while (elapsed < duration)
         {
             float alpha = Mathf.PingPong(elapsed * 2, 1f);
-            Color color = paylineImage.color;
-            paylineImage.color = new Color(color.r, color.g, color.b, alpha);
+            Color color = Color.yellow;
+            color.a = alpha;
+
+            // Update all segments
+            foreach (var segment in segments)
+            {
+                segment.color = color;
+            }
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        paylineImage.enabled = false;
-        CalculateWinAmount(paylineIndex, matchCount);
+        // Disable all segments
+        foreach (var segment in segments)
+        {
+            segment.enabled = false;
+        }
+
+        CalculateWinAmount(paylineIndex, matchCount, targetSymbol);
     }
 
-    private void CalculateWinAmount(int paylineIndex, int matchCount)
+    private Image[] GetPaylineSegments(int paylineIndex)
     {
-        // Get the winning symbol from the first position in the payline
-        GridPosition firstPos = paylines[paylineIndex][0];
-        Sprite winningSprite = symbolMatrix[firstPos.row, firstPos.col].sprite;
+        // Find all segments that belong to this payline
+        return GameObject.FindObjectsOfType<Image>()
+            .Where(img => img.gameObject.name.StartsWith($"Payline_{paylineIndex}_Segment"))
+            .ToArray();
+    }
 
-        // Find the corresponding symbol configuration
-        SymbolConfig winningSymbol = System.Array.Find(symbols, s => s.sprite == winningSprite);
-
+    private void CalculateWinAmount(int paylineIndex, int matchCount, SymbolConfig winningSymbol)
+    {
         if (winningSymbol != null)
         {
-            // Only calculate win if we meet the minimum match requirement
-            if (matchCount >= winningSymbol.minMatchesRequired)
-            {
-                // Calculate win based on match count and current bet
-                float winAmount = winningSymbol.value * matchCount * currentBet;
+            float winAmount = winningSymbol.value * matchCount * currentBet;
 
-                Debug.Log($"Win on payline {paylineIndex}:" +
-                         $"\nSymbol: {winningSymbol.name}" +
-                         $"\nMatches: {matchCount}/{winningSymbol.minMatchesRequired} required" +
-                         $"\nValue: {winningSymbol.value}" +
-                         $"\nWin Amount: {winAmount} credits");
+            Debug.Log($"Win on payline {paylineIndex}:" +
+                     $"\nSymbol: {winningSymbol.name}" +
+                     $"\nMatches: {matchCount}" +
+                     $"\nValue: {winningSymbol.value}" +
+                     $"\nWin Amount: {winAmount} credits");
 
-                // Here you would update the UI to show the win amount
-            }
-        }
-    }
-
-    // Debug method to test symbol distribution
-    public void TestSymbolDistribution(int spins)
-    {
-        Dictionary<string, int> distribution = new Dictionary<string, int>();
-
-        // Initialize counters
-        foreach (var symbol in symbols)
-        {
-            distribution[symbol.name] = 0;
-        }
-
-        // Simulate spins
-        for (int i = 0; i < spins; i++)
-        {
-            SymbolConfig symbol = GetRandomSymbol();
-            distribution[symbol.name]++;
-        }
-
-        // Log results
-        Debug.Log($"Distribution over {spins} spins:");
-        foreach (var kvp in distribution)
-        {
-            float percentage = (float)kvp.Value / spins * 100f;
-            Debug.Log($"{kvp.Key}: {percentage:F2}% ({kvp.Value} times)");
+            // Here you would update the UI to show the win amount
         }
     }
 
